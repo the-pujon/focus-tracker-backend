@@ -1,42 +1,66 @@
 import { NextFunction, Request, Response } from "express";
-//import catchAsync from "../utils/catchAsync.";
-import {
-  ForbiddenError,
-  NotFoundError,
-  UnauthorizedError,
-} from "../errors/AppError";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import config from "../../config";
+import AppError from "../errors/AppError";
+import httpStatus from "http-status";
+import jwt, {
+  JsonWebTokenError,
+  JwtPayload,
+  TokenExpiredError,
+} from "jsonwebtoken";
+import { getCachedData } from "../utils/redis.utils";
 import catchAsync from "../utils/catchAsync";
-import { AuthModel } from "../modules/auth/auth.model";
-//import { UserModel } from "../modules/auth/auth.model";
+import config from "../../config";
+import prisma from "../utils/prisma";
 
-export const authorization = (...requiredRoles: ("admin" | "user")[]) => {
+export const auth = (...requiredRoles: ("admin" | "user")[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization?.split(" ")[1];
 
-    //if token can't fount
     if (!token) {
-      throw new UnauthorizedError("You are not authorized! Login first");
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        "You are not authorized. Login first",
+      );
     }
 
-    const decoded = jwt.verify(token, config.jwt_access_secret as string);
+    try {
+      const decoded = jwt.verify(token, config.jwt_access_secret as string);
 
-    const { email, role } = decoded as JwtPayload;
+      const { email, role } = decoded as JwtPayload;
 
-    const user = await AuthModel.isUserExist(email);
+      const cachedToken = await getCachedData(`sparkle-car-service:user:${email}:token`);
 
-    //if user not found
-    if (!user) {
-      throw new NotFoundError("This user is not found!");
+      if (cachedToken !== token) {
+        throw new AppError(httpStatus.UNAUTHORIZED, "Token is not valid");
+      }
+
+      const user = await prisma.user.isUserExist(email);
+
+      if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "This user is not found!");
+      }
+
+      if (requiredRoles && !requiredRoles.includes(role)) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "You have no access to this route",
+        );
+      }
+
+      req.user = decoded as JwtPayload;
+      next();
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "Your session has expired. Please login again.",
+        );
+      } else if (error instanceof JsonWebTokenError) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid token. Please login again.",
+        );
+      }
+      throw error;
     }
-
-    if (requiredRoles && !requiredRoles.includes(role)) {
-      throw new ForbiddenError("You have no access to this route");
-    }
-
-    req.user = decoded as JwtPayload;
-
-    next();
   });
 };
