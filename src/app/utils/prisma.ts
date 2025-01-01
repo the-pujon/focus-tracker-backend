@@ -1,20 +1,26 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
-
-// Hash password middleware
-prisma.$use(async (params, next) => {
-    if (params.model === 'User') {
-      if (params.action === 'create' || params.action === 'update') {
-        const userData = params.args.data;
-        if (userData.password) {
+const prisma = new PrismaClient().$extends({
+  name: "HashPasswordMiddleware",
+  query: {
+    user: {
+      create: async ({ args, query }) => {
+        if (args.data.password) {
           const salt = await bcrypt.genSalt(10);
-          userData.password = await bcrypt.hash(userData.password, salt);
+          args.data.password = await bcrypt.hash(args.data.password, salt);
         }
-      }
-    }
-    return next(params);
-  });
+        return query(args);
+      },
+      update: async ({ args, query }) => {
+        if (args.data.password) {
+          const salt = await bcrypt.genSalt(10);
+          args.data.password = await bcrypt.hash(args.data.password as string, salt);
+        }
+        return query(args);
+      },
+    },
+  },
+});
 
 export default prisma;
