@@ -6,7 +6,7 @@ import {
   UnauthorizedError,
 } from "../errors/AppError";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import config from "../config";
+import config from "../../config";
 import catchAsync from "../utils/catchAsync";
 import { AuthModel } from "../modules/auth/auth.model";
 //import { UserModel } from "../modules/auth/auth.model";

@@ -1,21 +1,14 @@
-import { Server } from "http";
-import mongoose from "mongoose";
-import config from "./app/config";
-import app from "./app";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let server: Server;
+import { Server } from 'http';
+import app from './app'
+import config from './config';
+// import config from './config';
 
 async function main() {
-  try {
-    await mongoose.connect(config.database_url as string);
-
-    server = app.listen(config.port, () => {
-      console.log(`app is running on http://localhost:${config.port}`);
-    });
-  } catch (err) {
-    console.log("error is", err);
-  }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const server: Server = app.listen(config.port, () => {
+        // eslint-disable-next-line no-console
+        console.log("Sever is running on port ", config.port);
+    })
 }
 
 main();
