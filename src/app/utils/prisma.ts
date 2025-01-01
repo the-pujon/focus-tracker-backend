@@ -26,11 +26,7 @@ const prisma = new PrismaClient().$extends({
     user: {
       isUserExist: async (email: string) => {
         return prisma.user.findUnique({
-          where: { email },
-          select: {
-            email: true,
-            password: true, // Explicitly include password if it's excluded by default in your schema
-          },
+          where: { email }
         });
       },
     },
