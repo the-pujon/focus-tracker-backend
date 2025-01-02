@@ -4,9 +4,11 @@ import prisma from "../../utils/prisma";
 import { IUser } from "./user.interface";
 import httpStatus from "http-status";
 import isPasswordMatch from "../../utils/comparePassword";
-import { createToken, omitPassword } from "../../utils/auth.utils";
+import { createToken } from "../../utils/auth.utils";
 import config from "../../../config";
 import { cacheData, deleteCachedData } from "../../utils/redis.utils";
+
+const cacheKey = config.redis_cache_key_prefix;
 
 const signupUserIntoDB = async (user: IUser) => {
     const result = await prisma.user.create({
@@ -34,6 +36,7 @@ const loginUserService = async (payload: JwtPayload) => {
     }
   
     const jwtPayload = {
+      id: user.id,
       email: user.email,
       role: user.role as string,
     };
@@ -43,16 +46,14 @@ const loginUserService = async (payload: JwtPayload) => {
       config.jwt_access_secret as string,
       "10h",
     );
-    await deleteCachedData(`sparkle-car-service:user:${user.email}:token`);
+    await deleteCachedData(`${cacheKey}:user:${user.email}:token`);
     await cacheData(
-      `sparkle-car-service:user:${user.email}:token`,
+      `${cacheKey}:user:${user.email}:token`,
       token,
       3600 * 10,
     );
   
-    const loggedUserWithoutPassword = omitPassword(user);
-  
-    return { token, user: loggedUserWithoutPassword };
+    return { token };
   };
 
 export const UserService = {
