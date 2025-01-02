@@ -5,7 +5,9 @@ import { UserService } from "./auth.service";
 // import { UserService } from "./auth.service";
 
 const signupUser = catchAsync(async (req, res) => {
+    // console.log(req.body);
     const result = await UserService.signupUserIntoDB(req.body);
+    console.log(result);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,

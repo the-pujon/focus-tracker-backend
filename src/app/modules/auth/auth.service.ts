@@ -11,10 +11,16 @@ import { cacheData, deleteCachedData } from "../../utils/redis.utils";
 const cacheKey = config.redis_cache_key_prefix;
 
 const signupUserIntoDB = async (user: IUser) => {
-    const result = await prisma.user.create({
-        data: user,
-    });
-    return result;
+ try{ // console.log(user);
+  const result = await prisma.user.create({
+      data: user,
+  });
+  // console.log(result);
+  return result;
+} catch (error) {
+  // console.log(error)
+  throw new AppError(httpStatus.BAD_REQUEST, "Error creating user");
+}
 
 };
 
