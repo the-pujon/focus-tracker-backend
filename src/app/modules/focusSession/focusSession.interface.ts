@@ -4,9 +4,10 @@ export interface IFocusSession {
   id: string;  
   userId: string;  
   startTime?: Date;  
-  endTime: Date;  
+  endTime?: Date;  
+  sessionTime: number;
   breakTime: number;  
-  status: SessionStatus;  
+  status?: SessionStatus;  
   createdAt: Date;  
   updatedAt: Date;  
 }

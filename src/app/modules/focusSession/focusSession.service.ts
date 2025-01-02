@@ -3,23 +3,53 @@ import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
 import { IFocusSession } from "./focusSession.interface";
 
+
 const createFocusSession = async (payload: IFocusSession) => {
-  try {
-    const result = await prisma.focusSession.create({
-      data: payload,
-    });
-    return result;
-  } catch (error) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Error creating focus session");
-  }
-};
+ 
+      // Check if the user already has an active session (inprogress or paused)
+      const activeSession = await prisma.focusSession.findFirst({
+        where: {
+          userId: payload.userId, 
+          status: {
+            in: ["inprogress", "paused", "active"], 
+          },
+        },
+      });
+  
+      // If there is an active session, throw an error
+      if (activeSession) {
+        throw new AppError(httpStatus.CONFLICT, "User already has an active session");
+      }
+  
+      // Set startTime to now() (current time)
+      const startTime = new Date();
+  
+    
+      const sessionDurationInMilliseconds = payload.sessionTime * 60 * 1000; // Convert sessionTime to milliseconds
+      const endTime = new Date(startTime.getTime() + sessionDurationInMilliseconds);
+      try {
+      const result = await prisma.focusSession.create({
+        data: {
+          ...payload,
+          startTime,  
+          endTime, 
+        },
+      });
+  
+      return result;
+    } catch (error) {
+    //   console.error("Error creating focus session:", error);
+      throw new AppError(httpStatus.BAD_REQUEST, "Error creating focus session");
+    }
+  };
+  
 
 const getActiveSessionByUserId = async (userId: string) => {
     const activeSession = await prisma.focusSession.findFirst({
       where: {
         userId,
         status: {
-          in: ["inprogress", "paused"],
+          in: ["inprogress", "paused", "active"],
         },
       },
     });
