@@ -266,6 +266,72 @@ const todayFinishedFocusSessionsByUserId = async (userId: string) => {
       );
     }
   };
+
+
+
+const getWeeklyData = async (userId: string) => {
+    try {
+      const now = new Date();
+      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+      const sessions = await prisma.focusSession.findMany({
+        where: {
+          userId,
+          startTime: {
+            gte: startOfWeek,
+          },
+          status: "finished",
+        },
+      });
+  
+      const weeklyFocusTime = Array(7).fill(0);
+      const weeklySessions = Array(7).fill(0);
+  
+      sessions.forEach((session) => {
+        const dayIndex = new Date(session.startTime as Date).getDay();
+        weeklyFocusTime[dayIndex] += session.sessionTime;
+        weeklySessions[dayIndex]++;
+      });
+  
+      return { weeklyFocusTime, weeklySessions };
+    } catch (error) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Error fetching weekly data");
+    }
+  };
+  
+  const getMonthlyData = async (userId: string) => {
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const sessions = await prisma.focusSession.findMany({
+        where: {
+          userId,
+          startTime: {
+            gte: startOfMonth,
+          },
+          status: "finished",
+        },
+      });
+  
+      const daysInMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0
+      ).getDate();
+      const monthlyFocusTime = Array(daysInMonth).fill(0);
+      const monthlySessions = Array(daysInMonth).fill(0);
+  
+      sessions.forEach((session) => {
+        const dayIndex = new Date(session.startTime as Date).getDate() - 1;
+        monthlyFocusTime[dayIndex] += session.sessionTime;
+        monthlySessions[dayIndex]++;
+      });
+  
+      return { monthlyFocusTime, monthlySessions };
+    } catch (error) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Error fetching monthly data");
+    }
+  };
+  
   
 
 export const FocusSessionService = {
@@ -277,5 +343,7 @@ export const FocusSessionService = {
   getActiveSessionByUserId,
   updateFocusSessionStatus,
   startFocusSession,
-  todayFinishedFocusSessionsByUserId
+  todayFinishedFocusSessionsByUserId,
+  getWeeklyData,
+  getMonthlyData
 };

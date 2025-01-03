@@ -30,4 +30,10 @@ router.put("/:userId/start", FocusSessionController.startFocusSession);
 // Route to get today's finished focus sessions for a user
 router.get("/:userId/today", FocusSessionController.todayFocusSessionByUserId);
 
+// Route to get weekly focus sessions for a user
+router.get("/:userId/weekly", FocusSessionController.weeklyFocusSessionByUserId);
+
+// Route to get monthly focus sessions for a user
+router.get("/:userId/monthly", FocusSessionController.monthlyFocusSessionByUserId);
+
 export const FocusSessionRoutes = router;

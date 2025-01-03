@@ -120,6 +120,28 @@ const todayFocusSessionByUserId = catchAsync(async (req, res) => {
   });
 });
 
+const weeklyFocusSessionByUserId = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await FocusSessionService.getWeeklyData(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Focus sessions listed successfully",
+    data: result,
+  });
+});
+
+const monthlyFocusSessionByUserId = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await FocusSessionService.getMonthlyData(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Focus sessions listed successfully",
+    data: result,
+  });
+});
+
 export const FocusSessionController = {
   createFocusSession,
   getActiveSession,
@@ -129,5 +151,7 @@ export const FocusSessionController = {
   listFocusSessions,
   updateFocusSessionStatus,
   startFocusSession,
-  todayFocusSessionByUserId
+  todayFocusSessionByUserId,
+  weeklyFocusSessionByUserId,
+  monthlyFocusSessionByUserId
 };
