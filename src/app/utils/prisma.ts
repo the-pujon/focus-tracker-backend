@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '../../../prisma/generated/client'
+
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient().$extends({
