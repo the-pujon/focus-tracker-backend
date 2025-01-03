@@ -218,6 +218,56 @@ const listFocusSessions = async (userId: string) => {
   }
 };
 
+// const dailyFocusSessionByUserId = async (userId: string) => {
+//   try {
+//     const result = await prisma.focusSession.findMany({
+//       where: { userId },
+//       orderBy: { startTime: "desc" },
+//     });
+
+//     return result;
+//   } catch (error) {
+//     throw new AppError(
+//       httpStatus.INTERNAL_SERVER_ERROR,
+//       "Error listing focus sessions"
+//     );
+//   }
+// };
+
+
+const todayFinishedFocusSessionsByUserId = async (userId: string) => {
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00:00)
+  
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999); // End of today (23:59:59)
+  
+      const sessions = await prisma.focusSession.findMany({
+        where: {
+          userId,
+          status: "finished", // Fetch only finished sessions
+          startTime: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+        },
+      });
+  
+      const totalSessions = sessions.length;
+  
+      const totalTimes = sessions.reduce((sum, session) => sum + session.sessionTime, 0); // Use sessionTime directly
+  
+      return { totalSessions, totalTimes };
+    } catch (error) {
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Error calculating today's focus sessions"
+      );
+    }
+  };
+  
+
 export const FocusSessionService = {
   createFocusSession,
   getFocusSessionById,
@@ -226,5 +276,6 @@ export const FocusSessionService = {
   listFocusSessions,
   getActiveSessionByUserId,
   updateFocusSessionStatus,
-  startFocusSession
+  startFocusSession,
+  todayFinishedFocusSessionsByUserId
 };

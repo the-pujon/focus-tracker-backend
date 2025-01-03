@@ -27,4 +27,7 @@ router.put("/:userId/status", FocusSessionController.updateFocusSessionStatus);
 // Route to start a focus session for a user
 router.put("/:userId/start", FocusSessionController.startFocusSession);
 
+// Route to get today's finished focus sessions for a user
+router.get("/:userId/today", FocusSessionController.todayFocusSessionByUserId);
+
 export const FocusSessionRoutes = router;

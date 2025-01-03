@@ -109,6 +109,17 @@ const startFocusSession = catchAsync(async (req, res) => {
   });
 });
 
+const todayFocusSessionByUserId = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await FocusSessionService.todayFinishedFocusSessionsByUserId(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Focus sessions listed successfully",
+    data: result,
+  });
+});
+
 export const FocusSessionController = {
   createFocusSession,
   getActiveSession,
@@ -117,5 +128,6 @@ export const FocusSessionController = {
   deleteFocusSession,
   listFocusSessions,
   updateFocusSessionStatus,
-  startFocusSession
+  startFocusSession,
+  todayFocusSessionByUserId
 };
