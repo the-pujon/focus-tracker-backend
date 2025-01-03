@@ -12,22 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
-const config_1 = __importDefault(require("./app/config"));
 const app_1 = __importDefault(require("./app"));
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let server;
+const config_1 = __importDefault(require("./config"));
+// import config from './config';
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield mongoose_1.default.connect(config_1.default.database_url);
-            server = app_1.default.listen(config_1.default.port, () => {
-                console.log(`app is running on http://localhost:${config_1.default.port}`);
-            });
-        }
-        catch (err) {
-            console.log("error is", err);
-        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const server = app_1.default.listen(config_1.default.port, () => {
+            // eslint-disable-next-line no-console
+            console.log("Sever is running on port ", config_1.default.port);
+        });
     });
 }
 main();

@@ -4,15 +4,17 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./dist/server",
+    "prod": "node ./dist/server",
     "start:prod": "node ./dist/server",
     "start:dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "lint": "npx eslint src --ignore-pattern .ts",
     "lint:fix": "npx eslint src --fix",
     "prettier": "prettier --ignore-path .gitignore --write \"./src/**/*.+(js|ts|json)\"",
     "prettier:fix": "npx prettier --write src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
