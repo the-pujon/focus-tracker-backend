@@ -22,8 +22,8 @@ const getActiveSession = catchAsync(async (req, res) => {
 
   if (!result) {
     return sendResponse(res, {
-      success: false,
-      statusCode: httpStatus.NOT_FOUND,
+      success: true,
+      statusCode: httpStatus.OK,
       message: "No active session found for this user",
       data: null,
     });

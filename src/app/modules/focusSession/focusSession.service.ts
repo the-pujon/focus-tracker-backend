@@ -82,7 +82,7 @@ export const startFocusSession = async (userId: string) => {
       },
     });
 
-    console.log("activeSession in startFocusSession", activeSession);
+    // console.log("activeSession in startFocusSession", activeSession);
 
     // if (!activeSession) {
     //   throw new AppError(httpStatus.NOT_FOUND, "No active focus session found");
@@ -164,12 +164,21 @@ const updateFocusSessionStatus = async (
   };
   
   
-
 const updateFocusSession = async (id: string, payload: Partial<IFocusSession>) => {
   try {
+
+    const activeSession = await prisma.focusSession.findFirst({
+        where: {
+          userId: id,
+          status: "active",
+        },
+      });
+
     const result = await prisma.focusSession.update({
-      where: { id },
-      data: payload,
+      where: { id: activeSession!.id },
+      data: {...payload,
+        pausedTime: payload.sessionTime
+      },
     });
 
     return result;
