@@ -7,7 +7,8 @@ export interface IFocusSession {
   endTime?: Date;  
   sessionTime: number;
   breakTime: number;  
-  status?: SessionStatus;  
+  status?: SessionStatus;
+  pausedTime?: number;
   createdAt: Date;  
   updatedAt: Date;  
 }

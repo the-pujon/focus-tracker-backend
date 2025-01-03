@@ -5,6 +5,7 @@ import { FocusSessionService } from "./focusSession.service";
 
 // Create a new focus session
 const createFocusSession = catchAsync(async (req, res) => {
+    console.log(req.body);
   const result = await FocusSessionService.createFocusSession(req.body);
   sendResponse(res, {
     success: true,
@@ -84,6 +85,30 @@ const listFocusSessions = catchAsync(async (req, res) => {
   });
 });
 
+
+const updateFocusSessionStatus = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const { status } = req.body;
+  const result = await FocusSessionService.updateFocusSessionStatus(userId, status);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Focus session status updated successfully",
+    data: result,
+  });
+});
+
+const startFocusSession = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await FocusSessionService.startFocusSession(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Focus session started successfully",
+    data: result,
+  });
+});
+
 export const FocusSessionController = {
   createFocusSession,
   getActiveSession,
@@ -91,4 +116,6 @@ export const FocusSessionController = {
   updateFocusSession,
   deleteFocusSession,
   listFocusSessions,
+  updateFocusSessionStatus,
+  startFocusSession
 };

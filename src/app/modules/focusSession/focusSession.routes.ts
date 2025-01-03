@@ -21,4 +21,10 @@ router.delete("/:id", FocusSessionController.deleteFocusSession);
 // Route to list all focus sessions for a user
 router.get("/:userId", FocusSessionController.listFocusSessions);
 
+// Route to update focus session status for a user
+router.put("/:userId/status", FocusSessionController.updateFocusSessionStatus);
+
+// Route to start a focus session for a user
+router.put("/:userId/start", FocusSessionController.startFocusSession);
+
 export const FocusSessionRoutes = router;

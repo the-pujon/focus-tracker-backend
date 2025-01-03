@@ -2,10 +2,10 @@ import httpStatus from "http-status";
 import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
 import { IFocusSession } from "./focusSession.interface";
+import { SessionStatus } from "@prisma/client";
 
 
 const createFocusSession = async (payload: IFocusSession) => {
- 
       // Check if the user already has an active session (inprogress or paused)
       const activeSession = await prisma.focusSession.findFirst({
         where: {
@@ -21,24 +21,18 @@ const createFocusSession = async (payload: IFocusSession) => {
         throw new AppError(httpStatus.CONFLICT, "User already has an active session");
       }
   
-      // Set startTime to now() (current time)
-      const startTime = new Date();
-  
-    
-      const sessionDurationInMilliseconds = payload.sessionTime * 60 * 1000; // Convert sessionTime to milliseconds
-      const endTime = new Date(startTime.getTime() + sessionDurationInMilliseconds);
+ 
       try {
       const result = await prisma.focusSession.create({
         data: {
           ...payload,
-          startTime,  
-          endTime, 
+          pausedTime: payload.sessionTime
         },
       });
   
       return result;
     } catch (error) {
-    //   console.error("Error creating focus session:", error);
+      console.error("Error creating focus session:", error);
       throw new AppError(httpStatus.BAD_REQUEST, "Error creating focus session");
     }
   };
@@ -76,6 +70,100 @@ const getFocusSessionById = async (id: string) => {
     );
   }
 };
+
+
+export const startFocusSession = async (userId: string) => {
+  try {
+    // Fetch the active session for the user
+    const activeSession = await prisma.focusSession.findFirst({
+      where: {
+        userId,
+        status: "active",
+      },
+    });
+
+    console.log("activeSession in startFocusSession", activeSession);
+
+    // if (!activeSession) {
+    //   throw new AppError(httpStatus.NOT_FOUND, "No active focus session found");
+    // }
+
+    // Calculate start and end times
+    const startTime = new Date();
+    const sessionDurationInMilliseconds = activeSession!.sessionTime * 60 * 1000; // Convert sessionTime to milliseconds
+    const endTime = new Date(startTime.getTime() + sessionDurationInMilliseconds);
+
+    // Update the focus session
+    const updatedSession = await prisma.focusSession.update({
+      where: { id: activeSession!.id },
+      data: {
+        status: "inprogress",
+        startTime,
+        endTime,
+      },
+    });
+
+    return updatedSession;
+  } catch (error) {
+    console.error("error in startFocusSession", error);
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Error starting focus session"
+    );
+  }
+};
+
+const updateFocusSessionStatus = async (
+    userId: string,
+    status: { status: SessionStatus }
+  ) => {
+    try {
+      // Find the active session
+      const activeSession = await prisma.focusSession.findFirst({
+        where: {
+          userId,
+          status: {
+            in: ["inprogress", "paused", "active"],
+          },
+        },
+      });
+  
+      if (!activeSession) {
+        throw new AppError(
+          httpStatus.NOT_FOUND,
+          "No active or paused focus session found to update"
+        );
+      }
+  
+      // Calculate remaining time if pausing
+      let pausedTime = activeSession.pausedTime || 0;
+      if (status.status === "paused" && activeSession.startTime) {
+        const elapsedTime = Math.floor(
+          (Date.now() - new Date(activeSession.startTime).getTime()) / 1000
+        );
+        pausedTime = Math.max(activeSession.sessionTime - elapsedTime, 0);
+      }
+  
+      // Update the session
+      const updatedSession = await prisma.focusSession.update({
+        where: { id: activeSession.id },
+        data: {
+          status: status.status,
+          pausedTime: status.status === "paused" ? pausedTime : activeSession.pausedTime,
+        },
+      });
+  
+      return updatedSession;
+    } catch (error) {
+      console.error("Error in updateFocusSessionStatus:", error);
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Error updating focus session status"
+      );
+    }
+  };
+  
+  
 
 const updateFocusSession = async (id: string, payload: Partial<IFocusSession>) => {
   try {
@@ -127,5 +215,7 @@ export const FocusSessionService = {
   updateFocusSession,
   deleteFocusSession,
   listFocusSessions,
-  getActiveSessionByUserId
+  getActiveSessionByUserId,
+  updateFocusSessionStatus,
+  startFocusSession
 };

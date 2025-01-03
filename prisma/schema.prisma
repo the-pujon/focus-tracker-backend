@@ -36,7 +36,8 @@ model FocusSession {
   id          String        @id @default(cuid())
   userId      String
   sessionTime Int
-  startTime   DateTime      @default(now())
+  pausedTime  Int?
+  startTime   DateTime?     
   endTime     DateTime?
   breakTime   Int
   status      SessionStatus @default(active)
