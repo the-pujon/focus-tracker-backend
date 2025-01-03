@@ -36,4 +36,7 @@ router.get("/:userId/weekly", FocusSessionController.weeklyFocusSessionByUserId)
 // Route to get monthly focus sessions for a user
 router.get("/:userId/monthly", FocusSessionController.monthlyFocusSessionByUserId);
 
+// Route to get focus session streak for a user
+router.get("/:userId/streak", FocusSessionController.getFocusStreak);
+
 export const FocusSessionRoutes = router;

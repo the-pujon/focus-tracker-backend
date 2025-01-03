@@ -142,6 +142,17 @@ const monthlyFocusSessionByUserId = catchAsync(async (req, res) => {
   });
 });
 
+const getFocusStreak = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await FocusSessionService.getFocusStreakByUserId(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Focus session updated successfully",
+    data: result,
+  });
+});
+
 export const FocusSessionController = {
   createFocusSession,
   getActiveSession,
@@ -153,5 +164,6 @@ export const FocusSessionController = {
   startFocusSession,
   todayFocusSessionByUserId,
   weeklyFocusSessionByUserId,
-  monthlyFocusSessionByUserId
+  monthlyFocusSessionByUserId,
+  getFocusStreak
 };
